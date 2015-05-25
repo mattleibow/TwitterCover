@@ -61,35 +61,45 @@ namespace TwitterCover
 
             if (ScrollView.ContentOffset.Y < 0)
             {
-                var nfloat = -ScrollView.ContentOffset.Y;
+                var offset = -ScrollView.ContentOffset.Y;
 
-                topView.Frame = new CGRect(0, -nfloat, 320, topView.Bounds.Size.Height);
-                Frame = new CGRect(-nfloat, -nfloat + topView.Bounds.Size.Height, 320 + nfloat * 2, 200 + nfloat);
+                nfloat topViewHeight = 0;
+                if (topView != null)
+                {
+                    topView.Frame = new CGRect(0, -offset, 320, topView.Bounds.Size.Height);
+                    topViewHeight = topView.Bounds.Size.Height;
+                }
+                Frame = new CGRect(-offset, -offset + topViewHeight, 320 + offset * 2, CHTwitterCoverViewHeight + offset);
 
-                int num = (int)nfloat / 10;
-                if (num < 0)
+                int index = (int)offset / 10;
+                if (index < 0)
                 {
-                    num = 0;
+                    index = 0;
                 }
-                else if (num >= blurredImages.Count)
+                else if (index >= blurredImages.Count)
                 {
-                    num = blurredImages.Count - 1;
+                    index = blurredImages.Count - 1;
                 }
-                var uIImage = blurredImages[num];
-                if (Image != uIImage)
+                var image = blurredImages[index];
+                if (Image != image)
                 {
-                    base.Image = uIImage;
+                    base.Image = image;
                 }
             }
             else
             {
-                topView.Frame = new CGRect(0, 0, 320, topView.Bounds.Size.Height);
-                Frame = new CGRect(0, topView.Bounds.Size.Height, 320, 200);
-
-                var uIImage = blurredImages[0];
-                if (Image != uIImage)
+                nfloat topViewHeight = 0;
+                if (topView != null) 
                 {
-                    base.Image = uIImage;
+                    topView.Frame = new CGRect(0, 0, 320, topView.Bounds.Size.Height);
+                    topViewHeight = topView.Bounds.Size.Height;
+                }
+                Frame = new CGRect(0, topViewHeight, 320, CHTwitterCoverViewHeight);
+
+                var image = blurredImages[0];
+                if (Image != image)
+                {
+                    base.Image = image;
                 }
             }
         }
@@ -98,6 +108,7 @@ namespace TwitterCover
         {
             ScrollView.RemoveObserver(this, "contentOffset");
             topView.RemoveFromSuperview();
+
             base.RemoveFromSuperview();
         }
 
@@ -131,7 +142,7 @@ namespace TwitterCover
 
                     using (var outputImage = blur.OutputImage)
                     using (var context = CIContext.FromOptions(new CIContextOptions { UseSoftwareRenderer = false }))
-                    using (var cgImage = context.CreateCGImage(outputImage, new CGRect(new CGPoint(0, 0), image.Size)))
+                    using (var cgImage = context.CreateCGImage(outputImage, new CGRect(CGPoint.Empty, image.Size)))
                     {
                         result = UIImage.FromImage(cgImage);
                     }

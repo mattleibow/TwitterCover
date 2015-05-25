@@ -14,7 +14,7 @@ namespace TwitterCover
 
         public static void AddTwitterCover(this UIScrollView scrollView, UIImage image, UIView topView)
         {
-            var twitterCoverImageView = new TwitterCoverImageView(new CGRect(0, 0, 320, 200), topView)
+            var twitterCoverImageView = new TwitterCoverImageView(new CGRect(0, 0, 320, TwitterCoverImageView.CHTwitterCoverViewHeight), topView)
             {
                 BackgroundColor = UIColor.Clear,
                 Image = image,

@@ -11,7 +11,7 @@ namespace TwitterCoveriOSSample
     {
         public RootViewController()
         {
-            Title = "TwiterCover Demos";
+            Title = "TwitterCover Demos";
         }
 
         public override nint RowsInSection(UITableView tableview, nint section)
