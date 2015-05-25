@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
+using Accelerate;
 using CoreGraphics;
 using CoreImage;
 using Foundation;
@@ -129,26 +131,88 @@ namespace TwitterCover
             }
         }
 
-        private UIImage Blur(UIImage image, float blurRadius)
+        private static UIImage Blur(UIImage image, float blurRadius)
         {
-            UIImage result = null;
-            if (image != null)
+            if (image.Size.Width < 1 || image.Size.Height < 1)
             {
-                using (var imageClone = new CIImage(image))
-                using (var blur = new CIGaussianBlur())
-                {
-                    blur.Image = imageClone;
-                    blur.Radius = blurRadius;
-
-                    using (var outputImage = blur.OutputImage)
-                    using (var context = CIContext.FromOptions(new CIContextOptions { UseSoftwareRenderer = false }))
-                    using (var cgImage = context.CreateCGImage(outputImage, new CGRect(CGPoint.Empty, image.Size)))
-                    {
-                        result = UIImage.FromImage(cgImage);
-                    }
-                }
+                Debug.WriteLine(@"*** error: invalid size:({0} x {1}). Both dimensions must be >= 1: {2}", image.Size.Width, image.Size.Height, image);
+                return null;
             }
-            return result;
+            if (image.CGImage == null) 
+            {
+                Debug.WriteLine(@"*** error: image must be backed by a CGImage: {0}", image);
+                return null;
+            }
+
+            if (blurRadius < 0f || blurRadius > 1f) 
+            {
+                blurRadius = 0.5f;
+            }
+            var inputRadius = blurRadius * UIScreen.MainScreen.Scale;
+            var boxSize = (uint)(inputRadius * 40);
+            boxSize = boxSize - (boxSize % 2) + 1;
+
+            var imageRect = new CGRect(CGPoint.Empty, image.Size);
+
+            UIImage effectImage;
+            UIGraphics.BeginImageContextWithOptions(image.Size, false, UIScreen.MainScreen.Scale);
+            {
+                var contextIn = UIGraphics.GetCurrentContext();
+//              contextIn.ScaleCTM(1.0f, -1.0f);
+//              contextIn.TranslateCTM(0, -image.Size.Height);
+                contextIn.DrawImage(imageRect, image.CGImage);
+                var effectInContext = contextIn.AsBitmapContext();
+
+                var effectInBuffer = new vImageBuffer
+                {
+                    Data = effectInContext.Data,
+                    Width = (int)effectInContext.Width,
+                    Height = (int)effectInContext.Height,
+                    BytesPerRow = (int)effectInContext.BytesPerRow
+                };
+
+                UIGraphics.BeginImageContextWithOptions(image.Size, false, UIScreen.MainScreen.Scale);
+                {
+                    var effectOutContext = UIGraphics.GetCurrentContext().AsBitmapContext();
+                    var effectOutBuffer = new vImageBuffer
+                    {
+                        Data = effectOutContext.Data,
+                        Width =(int)effectOutContext.Width,
+                        Height =(int)effectOutContext.Height,
+                        BytesPerRow =(int)effectOutContext.BytesPerRow
+                    };
+
+                    vImage.BoxConvolveARGB8888(ref effectInBuffer, ref effectOutBuffer, IntPtr.Zero, 0, 0, boxSize, boxSize, Pixel8888.Zero, vImageFlags.EdgeExtend);
+                    vImage.BoxConvolveARGB8888(ref effectOutBuffer, ref effectInBuffer, IntPtr.Zero, 0, 0, boxSize, boxSize, Pixel8888.Zero, vImageFlags.EdgeExtend);
+                    vImage.BoxConvolveARGB8888(ref effectInBuffer, ref effectOutBuffer, IntPtr.Zero, 0, 0, boxSize, boxSize, Pixel8888.Zero, vImageFlags.EdgeExtend);
+
+                    effectImage = UIGraphics.GetImageFromCurrentImageContext();
+
+                    UIGraphics.EndImageContext();
+                }
+
+                UIGraphics.EndImageContext();
+            }
+
+            // Setup up output context
+            UIImage outputImage;
+            UIGraphics.BeginImageContextWithOptions(image.Size, false, UIScreen.MainScreen.Scale);
+            {
+                var outputContext = UIGraphics.GetCurrentContext();
+//              outputContext.ScaleCTM(1, -1);
+//              outputContext.TranslateCTM(0, -image.Size.Height);
+
+                // Draw base image
+                outputContext.SaveState();
+                outputContext.DrawImage(imageRect, effectImage.CGImage);
+                outputContext.RestoreState();
+
+                outputImage = UIGraphics.GetImageFromCurrentImageContext();
+
+                UIGraphics.EndImageContext();
+            }
+
+            return outputImage;
         }
     }
 }
