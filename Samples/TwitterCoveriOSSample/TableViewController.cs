@@ -39,7 +39,12 @@ namespace TwitterCoveriOSSample
             base.ViewDidLoad();
 
             TableView.AddTwitterCover(UIImage.FromBundle("cover.png"), topView);
-            TableView.TableHeaderView = new UIView(new CGRect(0, 0, 320, TwitterCoverImageView.CHTwitterCoverViewHeight + topView.Bounds.Size.Height));
+            nfloat topViewHeight = 0;
+            if (topView != null)
+            {
+                topViewHeight = topView.Bounds.Size.Height;
+            }
+            TableView.TableHeaderView = new UIView(new CGRect(0, 0, 320, TwitterCoverImageView.CHTwitterCoverViewHeight + topViewHeight));
         }
 
         public override nint RowsInSection(UITableView tableview, nint section)
