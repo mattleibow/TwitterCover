@@ -12,26 +12,44 @@ namespace TwitterCover
 {
     public class TwitterCoverImageView : UIImageView
     {
-        public const int CHTwitterCoverViewHeight = 200;
+        public static readonly nfloat DefaultCoverViewHeight = 200;
 
         private UIScrollView scrollView;
         private UIView topView;
         private List<UIImage> blurredImages;
 
-        public TwitterCoverImageView(CGRect frame)
-            : this(frame, null)
+        public TwitterCoverImageView()
         {
+            Initialize (null);
+        }
+
+        public TwitterCoverImageView(UIView topView)
+        {
+            Initialize (topView);
+        }
+
+        public TwitterCoverImageView(CGRect frame)
+            : base (frame)
+        {
+            Initialize (null);
         }
 
         public TwitterCoverImageView(CGRect frame, UIView topView)
-            : base(frame)
+            : base (frame)
         {
-            this.topView = topView;
+            Initialize (topView);
+        }
 
-            blurredImages = new List<UIImage>(20);
+        private void Initialize (UIView top)
+        {
+            topView = top;
+            CoverViewHeight = DefaultCoverViewHeight;
+            blurredImages = new List<UIImage> (20);
             ContentMode = UIViewContentMode.ScaleAspectFill;
             ClipsToBounds = true;
         }
+
+        public nfloat CoverViewHeight { get; set; }
 
         public UIScrollView ScrollView
         {
@@ -71,7 +89,7 @@ namespace TwitterCover
                     topView.Frame = new CGRect(0, -offset, 320, topView.Bounds.Size.Height);
                     topViewHeight = topView.Bounds.Size.Height;
                 }
-                Frame = new CGRect(-offset, -offset + topViewHeight, 320 + offset * 2, CHTwitterCoverViewHeight + offset);
+                Frame = new CGRect(-offset, -offset + topViewHeight, 320 + offset * 2, CoverViewHeight + offset);
 
                 int index = (int)offset / 10;
                 if (index < 0)
@@ -96,7 +114,7 @@ namespace TwitterCover
                     topView.Frame = new CGRect(0, 0, 320, topView.Bounds.Size.Height);
                     topViewHeight = topView.Bounds.Size.Height;
                 }
-                Frame = new CGRect(0, topViewHeight, 320, CHTwitterCoverViewHeight);
+                Frame = new CGRect(0, topViewHeight, 320, CoverViewHeight);
 
                 var image = blurredImages[0];
                 if (Image != image)
@@ -109,7 +127,10 @@ namespace TwitterCover
         public override void RemoveFromSuperview()
         {
             ScrollView.RemoveObserver(this, "contentOffset");
-            topView.RemoveFromSuperview();
+            if (topView != null)
+            {
+                topView.RemoveFromSuperview ();
+            }
 
             base.RemoveFromSuperview();
         }

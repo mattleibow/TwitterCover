@@ -32,16 +32,17 @@ namespace TwitterCoveriOSSample
         {
             base.ViewDidLoad();
 
+            nfloat CoverViewHeight = 200;
             View.BackgroundColor = UIColor.White;
 
             scrollView = new UIScrollView(View.Bounds)
             {
                 ContentSize = new CGSize(View.Bounds.Size.Width, 600)
             };
-            scrollView.AddTwitterCover(UIImage.FromBundle("cover.png"));
+            scrollView.AddTwitterCover(UIImage.FromBundle("cover.png"), CoverViewHeight);
             View.AddSubview(scrollView);
 
-            var label = new UILabel(new CGRect(20, TwitterCoverImageView.CHTwitterCoverViewHeight, View.Bounds.Size.Width - 40, 600 - TwitterCoverImageView.CHTwitterCoverViewHeight))
+            var label = new UILabel(new CGRect(20, CoverViewHeight, View.Bounds.Size.Width - 40, 600 - CoverViewHeight))
             {
                 Lines = 0,
                 Font = UIFont.SystemFontOfSize(22),

@@ -10,12 +10,13 @@ namespace TwitterCover
 {
     public static class TwitterCoverExtensions
     {
-        private static NSObject coverViewKey = new NSObject();
+        private static readonly NSObject coverViewKey = new NSObject();
 
-        public static void AddTwitterCover(this UIScrollView scrollView, UIImage image, UIView topView)
+        public static TwitterCoverImageView AddTwitterCover(this UIScrollView scrollView, UIImage image, UIView topView, nfloat coverViewHeight)
         {
-            var twitterCoverImageView = new TwitterCoverImageView(new CGRect(0, 0, 320, TwitterCoverImageView.CHTwitterCoverViewHeight), topView)
+            var twitterCoverImageView = new TwitterCoverImageView(topView)
             {
+                CoverViewHeight = coverViewHeight,
                 BackgroundColor = UIColor.Clear,
                 Image = image,
                 ScrollView = scrollView
@@ -26,11 +27,13 @@ namespace TwitterCover
                 scrollView.AddSubview(topView);
             }
             scrollView.SetTwitterCoverView(twitterCoverImageView);
+
+            return twitterCoverImageView;
         }
 
-        public static void AddTwitterCover(this UIScrollView scrollView, UIImage image)
+        public static TwitterCoverImageView AddTwitterCover(this UIScrollView scrollView, UIImage image, nfloat coverViewHeight)
         {
-            scrollView.AddTwitterCover(image, null);
+            return scrollView.AddTwitterCover(image, null, coverViewHeight);
         }
 
         public static void RemoveTwitterCover(this UIScrollView scrollView)
