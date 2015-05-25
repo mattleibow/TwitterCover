@@ -31,7 +31,7 @@ namespace TwitterCover
             ClipsToBounds = true;
         }
 
-        public UIScrollView UIScrollView
+        public UIScrollView ScrollView
         {
             get { return scrollView; }
             set
@@ -109,12 +109,12 @@ namespace TwitterCover
         private void PrepareForBlurImages()
         {
             blurredImages.Clear();
-            float num = 0.1;
+            float num = 0.1f;
             blurredImages.Add(Image);
             for (int i = 0; i < 20; i++)
             {
                 blurredImages.Add(Blur(Image, num));
-                num += 0.04;
+                num += 0.04f;
             }
         }
 
