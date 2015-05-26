@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?> 
 <resources>
     <!-- Default Parallax ImageView Height  -->
-    <dimen name="size_default_height">200dp</dimen>
+    <dimen name="twitterCover_default_coverHeight">200dp</dimen>
 </resources>

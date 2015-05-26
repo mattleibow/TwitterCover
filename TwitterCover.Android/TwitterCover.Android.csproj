@@ -53,8 +53,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <AndroidResource Include="Resources\layout\listview_header.axml">
-      <SubType>AndroidResource</SubType>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\values\attrs.xml">
+      <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>

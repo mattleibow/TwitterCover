@@ -9,6 +9,7 @@ using Android.Views.Animations;
 using Android.Widget;
 using Android.Views;
 using Android.Support.V8.Renderscript;
+using Android.Content.Res;
 
 namespace TwitterCover
 {
@@ -24,40 +25,69 @@ namespace TwitterCover
         public TwitterCoverListView(Context context, IAttributeSet attrs, int defStyle)
             : base(context, attrs, defStyle)
         {
-            Init(context);
+            // get the default
+            var coverHeight = context.Resources.GetDimensionPixelSize(Resource.Dimension.twitterCover_default_coverHeight);
+            // get the default
+            var a = context.ObtainStyledAttributes(attrs, Resource.Styleable.TwitterCoverListView, defStyle, 0);
+            coverHeight = a.GetDimensionPixelSize(Resource.Styleable.TwitterCoverListView_coverHeight, coverHeight);
+            a.Recycle();
+
+            Init(context, coverHeight);
         }
 
         public TwitterCoverListView(Context context, IAttributeSet attrs)
             : base(context, attrs)
         {
-            Init(context);
+            // get the default
+            var coverHeight = context.Resources.GetDimensionPixelSize(Resource.Dimension.twitterCover_default_coverHeight);
+            // get the local
+            var a = context.ObtainStyledAttributes(attrs, Resource.Styleable.TwitterCoverListView);
+            coverHeight = a.GetDimensionPixelSize(Resource.Styleable.TwitterCoverListView_coverHeight, coverHeight);
+            a.Recycle();
+
+            Init(context, coverHeight);
+        }
+
+        public TwitterCoverListView(Context context, int coverHeight)
+            : base(context)
+        {
+            Init(context, coverHeight);
         }
 
         public TwitterCoverListView(Context context)
             : base(context)
         {
-            Init(context);
+            // get the default
+            var coverHeight = context.Resources.GetDimensionPixelSize(Resource.Dimension.twitterCover_default_coverHeight);
+
+            Init(context, coverHeight);
         }
 
-        private void Init(Context context)
+        private void Init(Context context, int coverHeight)
         {
             mContext = context;
 
             OverScrollMode = OverScrollMode.Never;
 
-            var header = LayoutInflater.From(mContext).Inflate(Resource.Layout.listview_header, null);
+            mCoverImageViewHeight = coverHeight;
+            mCoverImageViewMaxHeight = coverHeight * 2;
 
-            mCoverView = header.FindViewById<ImageView>(Resource.Id.layout_header_image);
+            var header = new RelativeLayout(context);
+            header.LayoutParameters = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
+
+            mCoverContainer = new FrameLayout(context);
+            mCoverContainer.LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, mCoverImageViewHeight);
+            header.AddView(mCoverContainer);
+
+            mCoverView = new ImageView(context);
+            mCoverView.LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
             mCoverView.SetScaleType(ImageView.ScaleType.CenterCrop);
+            mCoverContainer.AddView(mCoverView);
 
-            mCoverMaskView = header.FindViewById<ImageView>(Resource.Id.layout_header_mask);
+            mCoverMaskView = new ImageView(context);
+            mCoverMaskView.LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
             mCoverMaskView.SetScaleType(ImageView.ScaleType.CenterCrop);
-
-            mCoverImageViewHeight = context.Resources.GetDimensionPixelSize(Resource.Dimension.size_default_height);
-            mCoverImageViewMaxHeight = mCoverImageViewHeight * 2;
-
-            mCoverContainer = header.FindViewById<FrameLayout>(Resource.Id.layout_header_container);
-            mCoverContainer.LayoutParameters.Height = mCoverImageViewHeight;
+            mCoverContainer.AddView(mCoverMaskView);
 
             AddHeaderView(header);
         }
