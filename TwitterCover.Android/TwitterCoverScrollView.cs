@@ -6,11 +6,11 @@ using Android.Widget;
 
 namespace TwitterCover
 {
-    public class TwitterCoverListView : ListView
+    public class TwitterCoverScrollView : ScrollView
     {
         private TwitterCoverImplementor implementor;
 
-        public TwitterCoverListView(Context context, IAttributeSet attrs, int defStyle)
+        public TwitterCoverScrollView(Context context, IAttributeSet attrs, int defStyle)
             : base(context, attrs, defStyle)
         {
             // get the default
@@ -23,7 +23,7 @@ namespace TwitterCover
             Init(context, coverHeight);
         }
 
-        public TwitterCoverListView(Context context, IAttributeSet attrs)
+        public TwitterCoverScrollView(Context context, IAttributeSet attrs)
             : base(context, attrs)
         {
             // get the default
@@ -36,13 +36,13 @@ namespace TwitterCover
             Init(context, coverHeight);
         }
 
-        public TwitterCoverListView(Context context, int coverHeight)
+        public TwitterCoverScrollView(Context context, int coverHeight)
             : base(context)
         {
             Init(context, coverHeight);
         }
 
-        public TwitterCoverListView(Context context)
+        public TwitterCoverScrollView(Context context)
             : base(context)
         {
             // get the default
@@ -54,13 +54,13 @@ namespace TwitterCover
         private void Init(Context context, int coverHeight)
         {
             OverScrollMode = OverScrollMode.Never;
-            
-            implementor = new TwitterCoverImplementor(context, coverHeight);
 
-            var header = new RelativeLayout(context);
-            header.LayoutParameters = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
+            implementor = new TwitterCoverImplementor(context, coverHeight);
+        }
+
+        public virtual void SetHeaderView(ViewGroup header)
+        {
             header.AddView(implementor.CoverContainer);
-            AddHeaderView(header);
         }
 
         public virtual void SetHeaderImage(Bitmap value)
@@ -68,9 +68,9 @@ namespace TwitterCover
             implementor.SetHeaderImage(value);
         }
 
-        protected override void OnScrollChanged(int l, int t, int oldl, int oldt)
+        public override void ComputeScroll()
         {
-            base.OnScrollChanged(l, t, oldl, oldt);
+            base.ComputeScroll();
 
             implementor.HandleScrollChanged();
         }
@@ -78,7 +78,7 @@ namespace TwitterCover
         protected override bool OverScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, bool isTouchEvent)
         {
             implementor.HandleOverScrollBy(deltaY, isTouchEvent);
-            
+
             return base.OverScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
         }
 
@@ -91,4 +91,5 @@ namespace TwitterCover
             return base.OnTouchEvent(ev);
         }
     }
+
 }

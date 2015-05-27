@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <resources>
-    <declare-styleable name="TwitterCoverListView">
-        <attr name="coverHeight" format="dimension" />
+    <declare-styleable name="TwitterCover">
+        <attr name="twitterCoverHeight" format="dimension" />
     </declare-styleable>
 </resources>
