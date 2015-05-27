@@ -13,7 +13,7 @@ using Android.Content.Res;
 
 namespace TwitterCover
 {
-    public class TwitterCoverListView : ListView, AbsListView.IOnScrollListener
+    public class TwitterCoverListView : ListView
     {
         private FrameLayout mCoverContainer;
         private ImageView mCoverView;
@@ -104,10 +104,6 @@ namespace TwitterCover
             }
         }
 
-        public void OnScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
-        {
-        }
-
         protected override void OnScrollChanged(int l, int t, int oldl, int oldt)
         {
             base.OnScrollChanged(l, t, oldl, oldt);
@@ -124,10 +120,6 @@ namespace TwitterCover
             {
                 mCoverMaskView.Alpha = 0;
             }
-        }
-
-        public void OnScrollStateChanged(AbsListView view, ScrollState scrollState)
-        {
         }
 
         protected override bool OverScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, bool isTouchEvent)
