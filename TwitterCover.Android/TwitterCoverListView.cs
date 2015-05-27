@@ -15,12 +15,7 @@ namespace TwitterCover
 {
     public class TwitterCoverListView : ListView
     {
-        private FrameLayout mCoverContainer;
-        private ImageView mCoverView;
-        private ImageView mCoverMaskView;
-        private Context mContext;
-        private int mCoverImageViewMaxHeight;
-        private int mCoverImageViewHeight;
+        private TwitterCoverImplementor implementor;
 
         public TwitterCoverListView(Context context, IAttributeSet attrs, int defStyle)
             : base(context, attrs, defStyle)
@@ -28,8 +23,8 @@ namespace TwitterCover
             // get the default
             var coverHeight = context.Resources.GetDimensionPixelSize(Resource.Dimension.twitterCover_default_coverHeight);
             // get the default
-            var a = context.ObtainStyledAttributes(attrs, Resource.Styleable.TwitterCoverListView, defStyle, 0);
-            coverHeight = a.GetDimensionPixelSize(Resource.Styleable.TwitterCoverListView_coverHeight, coverHeight);
+            var a = context.ObtainStyledAttributes(attrs, Resource.Styleable.TwitterCover, defStyle, 0);
+            coverHeight = a.GetDimensionPixelSize(Resource.Styleable.TwitterCover_coverHeight, coverHeight);
             a.Recycle();
 
             Init(context, coverHeight);
@@ -41,8 +36,8 @@ namespace TwitterCover
             // get the default
             var coverHeight = context.Resources.GetDimensionPixelSize(Resource.Dimension.twitterCover_default_coverHeight);
             // get the local
-            var a = context.ObtainStyledAttributes(attrs, Resource.Styleable.TwitterCoverListView);
-            coverHeight = a.GetDimensionPixelSize(Resource.Styleable.TwitterCoverListView_coverHeight, coverHeight);
+            var a = context.ObtainStyledAttributes(attrs, Resource.Styleable.TwitterCover);
+            coverHeight = a.GetDimensionPixelSize(Resource.Styleable.TwitterCover_coverHeight, coverHeight);
             a.Recycle();
 
             Init(context, coverHeight);
@@ -65,19 +60,63 @@ namespace TwitterCover
 
         private void Init(Context context, int coverHeight)
         {
-            mContext = context;
-
             OverScrollMode = OverScrollMode.Never;
+            
+            implementor = new TwitterCoverImplementor(context, coverHeight);
+
+            var header = new RelativeLayout(context);
+            header.LayoutParameters = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
+            header.AddView(implementor.CoverContainer);
+            AddHeaderView(header);
+        }
+
+        public virtual void SetHeaderImage(Bitmap value)
+        {
+            implementor.SetHeaderImage(value);
+        }
+
+        protected override void OnScrollChanged(int l, int t, int oldl, int oldt)
+        {
+            base.OnScrollChanged(l, t, oldl, oldt);
+
+            implementor.HandleScrollChanged();
+        }
+
+        protected override bool OverScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, bool isTouchEvent)
+        {
+            implementor.HandleOverScrollBy(deltaY, isTouchEvent);
+            
+            return base.OverScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
+        }
+
+        public override bool OnTouchEvent(MotionEvent ev)
+        {
+            if (ev.Action == MotionEventActions.Up)
+            {
+                implementor.HandleRelease();
+            }
+            return base.OnTouchEvent(ev);
+        }
+    }
+
+    public class TwitterCoverImplementor
+    {
+        private FrameLayout mCoverContainer;
+        private ImageView mCoverView;
+        private ImageView mCoverMaskView;
+        private Context mContext;
+        private int mCoverImageViewMaxHeight;
+        private int mCoverImageViewHeight;
+
+        public TwitterCoverImplementor(Context context, int coverHeight)
+        {
+            mContext = context;
 
             mCoverImageViewHeight = coverHeight;
             mCoverImageViewMaxHeight = coverHeight * 2;
 
-            var header = new RelativeLayout(context);
-            header.LayoutParameters = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
-
             mCoverContainer = new FrameLayout(context);
             mCoverContainer.LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, mCoverImageViewHeight);
-            header.AddView(mCoverContainer);
 
             mCoverView = new ImageView(context);
             mCoverView.LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
@@ -88,26 +127,24 @@ namespace TwitterCover
             mCoverMaskView.LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
             mCoverMaskView.SetScaleType(ImageView.ScaleType.CenterCrop);
             mCoverContainer.AddView(mCoverMaskView);
-
-            AddHeaderView(header);
         }
 
-        public virtual Bitmap HeaderImage
+        public View CoverContainer
         {
-            set
-            {
+            get { return mCoverContainer; }
+        }
+
+        public virtual void SetHeaderImage(Bitmap value)
+        {
                 mCoverView.SetImageBitmap(value);
                 mCoverMaskView.SetImageBitmap(value);
                 mCoverMaskView.Alpha = 0;
 
                 mCoverMaskView.SetImageBitmap(RenderScriptBlur(value, 25));
-            }
         }
 
-        protected override void OnScrollChanged(int l, int t, int oldl, int oldt)
+        public virtual void HandleScrollChanged()
         {
-            base.OnScrollChanged(l, t, oldl, oldt);
-
             int containerHeight = mCoverContainer.Height;
             int diff = containerHeight - mCoverImageViewHeight;
             if (diff > 0)
@@ -122,7 +159,7 @@ namespace TwitterCover
             }
         }
 
-        protected override bool OverScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, bool isTouchEvent)
+        public virtual void HandleOverScrollBy(int deltaY, bool isTouchEvent)
         {
             if (mCoverContainer.Height <= mCoverImageViewMaxHeight && isTouchEvent)
             {
@@ -131,14 +168,10 @@ namespace TwitterCover
                 mCoverContainer.LayoutParameters.Height = Math.Min(mCoverImageViewMaxHeight, Math.Max(destImageViewHeight, mCoverImageViewHeight));
                 mCoverContainer.RequestLayout();
             }
-
-            return base.OverScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
         }
 
-        public override bool OnTouchEvent(MotionEvent ev)
+        public virtual void HandleRelease()
         {
-            if (ev.Action == MotionEventActions.Up)
-            {
                 if (mCoverImageViewHeight < mCoverContainer.Height)
                 {
                     var animation = new ReleaseAnimimation(mCoverContainer, mCoverImageViewHeight);
@@ -146,8 +179,6 @@ namespace TwitterCover
 
                     mCoverContainer.StartAnimation(animation);
                 }
-            }
-            return base.OnTouchEvent(ev);
         }
 
         public virtual Bitmap RenderScriptBlur(Bitmap bitmap, int radius)
