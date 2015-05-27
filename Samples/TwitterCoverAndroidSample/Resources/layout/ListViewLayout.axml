@@ -6,7 +6,7 @@
     <twittercover.TwitterCoverListView
         android:id="@+id/listView"
         android:dividerHeight="1dp"
-        local:coverHeight="150dp"
+        local:twitterCoverHeight="150dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </RelativeLayout>

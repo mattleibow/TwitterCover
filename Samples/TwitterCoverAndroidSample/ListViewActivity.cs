@@ -8,17 +8,17 @@ using TwitterCover;
 
 namespace TwitterCoverAndroidSample
 {
-    [Activity(Label = "TwitterCoverAndroidSample", MainLauncher = true, Icon = "@drawable/ic_launcher")]
-    public class MainActivity : Activity
+    [Activity(Label = "TwitterCoverAndroidSample", Icon = "@drawable/ic_launcher")]
+    public class ListViewActivity : Activity
     {
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
 
-            SetContentView(Resource.Layout.MainLayout);
+            SetContentView(Resource.Layout.ListViewLayout);
 
             var listView = FindViewById<TwitterCoverListView>(Resource.Id.listView);
-            listView.HeaderImage = BitmapFactory.DecodeResource(Resources, Resource.Drawable.cover);
+            listView.SetHeaderImage(BitmapFactory.DecodeResource(Resources, Resource.Drawable.cover));
 
             var items = Enumerable.Range(1, 20).Select(x => "Item " + x).ToArray();
             listView.Adapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleExpandableListItem1, items);
